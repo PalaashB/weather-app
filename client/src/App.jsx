@@ -7,7 +7,7 @@ const icons = {
   0: '☀️',
   1: '🌤️',
   2: '⛅',
-  3: '☁️',
+  3: '☁️',          // WMO weather codes
   45: '🌫️',
   48: '🌫️',
   51: '🌦️',
@@ -34,11 +34,23 @@ function App() {
   const [location, setLocation] = useState('')
   const [data, setData] = useState(null)
   const [loading, setLoading] = useState(false)
+  const [error, setError] = useState('')
 
   async function load(loc) {
     setLoading(true)
-    const res = await fetch(`${API}/api/weather?location=${encodeURIComponent(loc)}`)
-    setData(await res.json())
+    setError('')
+    setData(null)
+    try {
+      const res = await fetch(`${API}/api/weather?location=${encodeURIComponent(loc)}`)
+      if (res.ok) {
+        setData(await res.json())
+      } else {
+        const body = await res.json()
+        setError(body.detail)
+      }
+    } catch {
+      setError('Could not load weather. Is the server running?')
+    }
     setLoading(false)
   }
 
@@ -72,6 +84,7 @@ function App() {
       </form>
 
       {loading && <p>Loading...</p>}
+      {error && <p className="error">{error}</p>}
 
       {data && (
         <div className="current">
