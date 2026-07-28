@@ -3,6 +3,33 @@ import './App.css'
 
 const API = 'http://localhost:8000'
 
+const icons = {
+  0: '☀️',
+  1: '🌤️',
+  2: '⛅',
+  3: '☁️',
+  45: '🌫️',
+  48: '🌫️',
+  51: '🌦️',
+  53: '🌦️',
+  55: '🌦️',
+  61: '🌧️',
+  63: '🌧️',
+  65: '🌧️',
+  71: '🌨️',
+  73: '🌨️',
+  75: '🌨️',
+  77: '🌨️',
+  80: '🌦️',
+  81: '🌧️',
+  82: '🌧️',
+  85: '🌨️',
+  86: '🌨️',
+  95: '⛈️',
+  96: '⛈️',
+  99: '⛈️',
+}
+
 function App() {
   const [location, setLocation] = useState('')
   const [data, setData] = useState(null)
@@ -52,9 +79,24 @@ function App() {
             {data.name}
             {data.country && `, ${data.country}`}
           </h2>
-          <p className="temp">{data.current.temperature_2m}°C</p>
+          <p className="temp">
+            {icons[data.current.weather_code]} {data.current.temperature_2m}°C
+          </p>
           <p>Humidity: {data.current.relative_humidity_2m}%</p>
           <p>Wind: {data.current.wind_speed_10m} km/h</p>
+
+          <h3>5-day forecast</h3>
+          <div className="forecast">
+            {data.forecast.map((day) => (
+              <div key={day.date} className="day">
+                <div>{day.date.slice(5)}</div>
+                <div className="icon">{icons[day.code]}</div>
+                <div>
+                  {day.max}° / {day.min}°
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
       )}
     </div>
