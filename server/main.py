@@ -58,12 +58,25 @@ def get_weather(location: str):
             "latitude": place["latitude"],
             "longitude": place["longitude"],
             "current": "temperature_2m,relative_humidity_2m,wind_speed_10m,weather_code",
+            "daily": "weather_code,temperature_2m_max,temperature_2m_min",
+            "forecast_days": 5,
             "timezone": "auto",
         },
     )
     data = r.json()
+    daily = data["daily"]
+    forecast = [
+        {
+            "date": daily["time"][i],
+            "code": daily["weather_code"][i],
+            "max": daily["temperature_2m_max"][i],
+            "min": daily["temperature_2m_min"][i],
+        }
+        for i in range(len(daily["time"]))
+    ]
     return {
         "name": place["name"],
         "country": place.get("country", ""),
         "current": data["current"],
+        "forecast": forecast,
     }
