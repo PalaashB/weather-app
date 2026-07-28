@@ -64,6 +64,46 @@ function App() {
     setLoading(false)
   }
 
+  function ask(r) {
+    const location = prompt('Location', r ? r.location : '')
+    if (!location) return null
+    const start_date = prompt('Start date (YYYY-MM-DD)', r ? r.start_date : '')
+    if (!start_date) return null
+    const end_date = prompt('End date (YYYY-MM-DD)', r ? r.end_date : '')
+    if (!end_date) return null
+    return { location, start_date, end_date }
+  }
+
+  async function send(url, method, body) {
+    const res = await fetch(url, {
+      method,
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+    })
+    if (res.ok) {
+      loadRecords()
+    } else {
+      const problem = await res.json()
+      alert(problem.detail)
+    }
+  }
+
+  function addRecord() {
+    const body = ask()
+    if (body) send(`${API}/api/records`, 'POST', body)
+  }
+
+  function editRecord(r) {
+    const body = ask(r)
+    if (body) send(`${API}/api/records/${r.id}`, 'PUT', body)
+  }
+
+  async function deleteRecord(id) {
+    if (!confirm('Delete this record?')) return
+    await fetch(`${API}/api/records/${id}`, { method: 'DELETE' })
+    loadRecords()
+  }
+
   function handleSearch(e) {
     e.preventDefault()
     load(location)
@@ -124,6 +164,11 @@ function App() {
       )}
 
       <h2>Saved records</h2>
+      <p>
+        <button onClick={addRecord}>Add record</button>{' '}
+        <a href={`${API}/api/export`}>Export CSV</a>
+      </p>
+
       <table>
         <thead>
           <tr>
@@ -132,6 +177,7 @@ function App() {
             <th>To</th>
             <th>Low / high</th>
             <th>Saved</th>
+            <th></th>
           </tr>
         </thead>
         <tbody>
@@ -145,6 +191,10 @@ function App() {
                 {Math.max(...r.temperature_data.map((d) => d.max))}°
               </td>
               <td>{r.created_at.replace('T', ' ')}</td>
+              <td>
+                <button onClick={() => editRecord(r)}>Edit</button>{' '}
+                <button onClick={() => deleteRecord(r.id)}>Delete</button>
+              </td>
             </tr>
           ))}
         </tbody>
