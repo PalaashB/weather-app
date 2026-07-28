@@ -1,4 +1,6 @@
+import json
 import sqlite3
+from datetime import date, datetime
 
 import httpx
 from fastapi import FastAPI, HTTPException
@@ -80,3 +82,47 @@ def get_weather(location: str):
         "current": data["current"],
         "forecast": forecast,
     }
+
+
+@app.post("/api/records")
+def create_record(body: dict):
+    try:
+        start = date.fromisoformat(body["start_date"])
+        end = date.fromisoformat(body["end_date"])
+    except ValueError:
+        raise HTTPException(status_code=400, detail="Dates must be YYYY-MM-DD")
+
+    if start > end:
+        raise HTTPException(status_code=400, detail="Start date must be on or before end date")
+
+    place = geocode(body["location"])
+    if place is None:
+        raise HTTPException(status_code=404, detail="Location not found")
+
+    r = httpx.get(
+        FORECAST_URL,
+        params={
+            "latitude": place["latitude"],
+            "longitude": place["longitude"],
+            "daily": "temperature_2m_max,temperature_2m_min",
+            "start_date": str(start),
+            "end_date": str(end),
+            "timezone": "auto",
+        },
+    )
+    data = r.json()
+    if "daily" not in data:
+        raise HTTPException(status_code=400, detail=data.get("reason", "No weather data for that range"))
+
+    daily = data["daily"]
+    temps = [
+        {"date": daily["time"][i], "max": daily["temperature_2m_max"][i], "min": daily["temperature_2m_min"][i]}
+        for i in range(len(daily["time"]))
+    ]
+
+    cur = db.execute(
+        "INSERT INTO records (location, start_date, end_date, temperature_data, created_at) VALUES (?, ?, ?, ?, ?)",
+        (place["name"], str(start), str(end), json.dumps(temps), datetime.now().isoformat(timespec="seconds")),
+    )
+    db.commit()
+    return {"id": cur.lastrowid}
