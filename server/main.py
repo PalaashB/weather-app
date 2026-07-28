@@ -1,9 +1,11 @@
+import csv
+import io
 import json
 import sqlite3
 from datetime import date, datetime
 
 import httpx
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Response
 from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI()
@@ -176,3 +178,21 @@ def delete_record(record_id: int):
     if cur.rowcount == 0:
         raise HTTPException(status_code=404, detail="Record not found")
     return {"deleted": record_id}
+
+
+@app.get("/api/export")
+def export_csv():
+    rows = db.execute(
+        "SELECT id, location, start_date, end_date, temperature_data, created_at FROM records ORDER BY id"
+    ).fetchall()
+
+    out = io.StringIO()
+    writer = csv.writer(out)
+    writer.writerow(["id", "location", "start_date", "end_date", "temperature_data", "created_at"])
+    writer.writerows(rows)
+
+    return Response(
+        out.getvalue(),
+        media_type="text/csv",
+        headers={"Content-Disposition": "attachment; filename=records.csv"},
+    )
