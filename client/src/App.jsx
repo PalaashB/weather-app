@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import './App.css'
 
 const API = 'http://localhost:8000'
@@ -35,6 +35,16 @@ function App() {
   const [data, setData] = useState(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+  const [records, setRecords] = useState([])
+
+  useEffect(() => {
+    loadRecords()
+  }, [])
+
+  async function loadRecords() {
+    const res = await fetch(`${API}/api/records`)
+    setRecords(await res.json())
+  }
 
   async function load(loc) {
     setLoading(true)
@@ -112,6 +122,33 @@ function App() {
           </div>
         </div>
       )}
+
+      <h2>Saved records</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Location</th>
+            <th>From</th>
+            <th>To</th>
+            <th>Low / high</th>
+            <th>Saved</th>
+          </tr>
+        </thead>
+        <tbody>
+          {records.map((r) => (
+            <tr key={r.id}>
+              <td>{r.location}</td>
+              <td>{r.start_date}</td>
+              <td>{r.end_date}</td>
+              <td>
+                {Math.min(...r.temperature_data.map((d) => d.min))}° /{' '}
+                {Math.max(...r.temperature_data.map((d) => d.max))}°
+              </td>
+              <td>{r.created_at.replace('T', ' ')}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
     </div>
   )
 }
