@@ -126,3 +126,21 @@ def create_record(body: dict):
     )
     db.commit()
     return {"id": cur.lastrowid}
+
+
+@app.get("/api/records")
+def list_records():
+    rows = db.execute(
+        "SELECT id, location, start_date, end_date, temperature_data, created_at FROM records ORDER BY id DESC"
+    ).fetchall()
+    return [
+        {
+            "id": row[0],
+            "location": row[1],
+            "start_date": row[2],
+            "end_date": row[3],
+            "temperature_data": json.loads(row[4]),
+            "created_at": row[5],
+        }
+        for row in rows
+    ]
