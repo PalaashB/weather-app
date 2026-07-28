@@ -1,6 +1,7 @@
 import sqlite3
 
-from fastapi import FastAPI
+import httpx
+from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI()
@@ -25,3 +26,44 @@ db.execute(
     )"""
 )
 db.commit()
+
+GEO_URL = "https://geocoding-api.open-meteo.com/v1/search"
+FORECAST_URL = "https://api.open-meteo.com/v1/forecast"
+
+
+def geocode(location):
+    parts = location.split(",")
+    if len(parts) == 2:
+        try:
+            return {"name": location, "latitude": float(parts[0]), "longitude": float(parts[1])}
+        except ValueError:
+            pass
+
+    r = httpx.get(GEO_URL, params={"name": location, "count": 1})
+    results = r.json().get("results")
+    if not results:
+        return None
+    return results[0]
+
+
+@app.get("/api/weather")
+def get_weather(location: str):
+    place = geocode(location)
+    if place is None:
+        raise HTTPException(status_code=404, detail="Location not found")
+
+    r = httpx.get(
+        FORECAST_URL,
+        params={
+            "latitude": place["latitude"],
+            "longitude": place["longitude"],
+            "current": "temperature_2m,relative_humidity_2m,wind_speed_10m,weather_code",
+            "timezone": "auto",
+        },
+    )
+    data = r.json()
+    return {
+        "name": place["name"],
+        "country": place.get("country", ""),
+        "current": data["current"],
+    }
