@@ -1,63 +1,124 @@
 body {
   margin: 0;
   font-family: system-ui, sans-serif;
+  line-height: 1.45;
   color: #222;
+  background: #fbfbfb;
 }
 
 .app {
-  max-width: 720px;
-  padding: 20px;
+  max-width: 760px;
+  padding: 24px 20px 48px;
 }
 
 h1 {
   font-size: 22px;
+  margin: 0 0 16px;
+}
+
+h2 {
+  font-size: 17px;
+  margin: 28px 0 8px;
+}
+
+h3 {
+  font-size: 14px;
+  color: #666;
+  margin: 18px 0 8px;
+}
+
+input,
+button {
+  font: inherit;
+  font-size: 14px;
+  border: 1px solid #bbb;
+  border-radius: 3px;
+  padding: 5px 8px;
+  background: #fff;
+}
+
+button {
+  background: #f2f2f2;
+  cursor: pointer;
+}
+
+button:hover {
+  background: #e6e6e6;
 }
 
 .search input {
-  width: 240px;
-  padding: 6px;
+  width: 260px;
 }
 
 .search button {
   margin-left: 6px;
-  padding: 6px 10px;
 }
 
 .error {
   color: #b00;
 }
 
+.current {
+  margin-top: 20px;
+  padding: 14px 16px;
+  border: 1px solid #e0e0e0;
+  background: #fff;
+}
+
+.current h2 {
+  margin: 0;
+}
+
 .current p {
   margin: 4px 0;
+  color: #555;
 }
 
 .temp {
-  font-size: 26px;
+  font-size: 28px;
+  color: #222;
 }
 
 .forecast {
   display: flex;
+  flex-wrap: wrap;
   gap: 8px;
 }
 
 .day {
-  min-width: 78px;
+  min-width: 84px;
   padding: 8px;
-  border: 1px solid #ccc;
+  border: 1px solid #e0e0e0;
+  background: #fafafa;
+  text-align: center;
+  font-size: 13px;
 }
 
 .day .icon {
   font-size: 22px;
+  line-height: 1.6;
 }
 
 table {
+  width: 100%;
   border-collapse: collapse;
-  font-size: 14px;
+  font-size: 13px;
+  background: #fff;
+}
+
+th {
+  background: #f2f2f2;
+  font-weight: 600;
 }
 
 th,
 td {
-  padding: 5px 8px;
-  border: 1px solid #ccc;
+  padding: 6px 8px;
+  border: 1px solid #e0e0e0;
   text-align: left;
+}
+
+td button {
+  padding: 2px 8px;
+  font-size: 12px;
 }
